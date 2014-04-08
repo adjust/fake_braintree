@@ -102,7 +102,7 @@ module FakeBraintree
         'merchant_id' => options[:merchant_id],
         'customer_id' => options[:customer_id],
         'default' => options[:make_default]
-      }.merge(credit_card_hash_from_params)
+      }.merge(sanitize_credit_card_hash(credit_card_hash_from_params))
     end
 
     def set_billing_address
@@ -118,6 +118,16 @@ module FakeBraintree
 
       if expiration_year
         @hash['expiration_year'] = expiration_year
+      end
+    end
+
+    def sanitize_credit_card_hash(credit_card_hash)
+      credit_card_hash.dup.tap do |hash|
+        cc_number = hash.delete(:number) || ''
+        hash.merge(
+          'bin' => cc_number[0, 6],
+          'last_4' => cc_number[-4, 4]
+        )
       end
     end
 
