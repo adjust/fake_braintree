@@ -13,7 +13,7 @@ module FakeBraintree
         if token.nil?
           @hash['token'] = generate_token
         end
-        FakeBraintree.registry.credit_cards[token] = @hash
+        FakeBraintree.registry.credit_cards[token] = sanitize_credit_card_hash(@hash)
         if customer = FakeBraintree.registry.customers[@hash['customer_id']]
           customer['credit_cards'] << @hash
           update_default_card
@@ -34,7 +34,7 @@ module FakeBraintree
     end
 
     def to_xml
-      @hash.to_xml(root: 'credit_card')
+      sanitize_credit_card_hash(@hash).to_xml(root: 'credit_card')
     end
 
     def valid_number?
@@ -102,7 +102,7 @@ module FakeBraintree
         'merchant_id' => options[:merchant_id],
         'customer_id' => options[:customer_id],
         'default' => options[:make_default]
-      }.merge(sanitize_credit_card_hash(credit_card_hash_from_params))
+      }.merge(credit_card_hash_from_params)
     end
 
     def set_billing_address
